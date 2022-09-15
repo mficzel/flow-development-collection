@@ -124,7 +124,17 @@ class Session implements CookieEnabledInterface
     /**
      * @var integer
      */
+    protected $lifetimeThreshold;
+
+    /**
+     * @var integer
+     */
     protected $lastActivityTimestamp;
+
+    /**
+     * @var SessionMetadata|null
+     */
+    protected $previousSessionMetadata;
 
     /**
      * @var array
@@ -242,6 +252,7 @@ class Session implements CookieEnabledInterface
         $this->garbageCollectionProbability = $settings['session']['garbageCollection']['probability'];
         $this->garbageCollectionMaximumPerRun = $settings['session']['garbageCollection']['maximumPerRun'];
         $this->inactivityTimeout = (integer)$settings['session']['inactivityTimeout'];
+        $this->lifetimeThreshold = (integer)$settings['session']['lifetimeThreshold'];
     }
 
     /**
@@ -348,6 +359,7 @@ class Session implements CookieEnabledInterface
         if ($sessionMetaData === false) {
             return false;
         }
+        $this->previousSessionMetadata = SessionMetadata::fromArray($sessionMetaData);
         $this->lastActivityTimestamp = $sessionMetaData['lastActivityTimestamp'];
         $this->storageIdentifier = $sessionMetaData['storageIdentifier'];
         $this->tags = $sessionMetaData['tags'];
@@ -712,7 +724,7 @@ class Session implements CookieEnabledInterface
     {
         $lastActivitySecondsAgo = $this->now - $this->lastActivityTimestamp;
         $expired = false;
-        if ($this->inactivityTimeout !== 0 && $lastActivitySecondsAgo > $this->inactivityTimeout) {
+        if ($this->inactivityTimeout !== 0 && $lastActivitySecondsAgo > ($this->inactivityTimeout + $this->lifetimeThreshold)) {
             $this->started = true;
             $this->sessionIdentifier = $this->sessionCookie->getValue();
             $this->destroy(sprintf('Session %s was inactive for %s seconds, more than the configured timeout of %s seconds.', $this->sessionIdentifier, $lastActivitySecondsAgo, $this->inactivityTimeout));
@@ -767,11 +779,16 @@ class Session implements CookieEnabledInterface
      */
     protected function writeSessionMetaDataCacheEntry()
     {
-        $sessionInfo = [
-            'lastActivityTimestamp' => $this->lastActivityTimestamp,
-            'storageIdentifier' => $this->storageIdentifier,
-            'tags' => $this->tags
-        ];
+
+        $sessionMetadata = new SessionMetadata(
+            $this->lastActivityTimestamp,
+            $this->storageIdentifier,
+           $this->tags
+        );
+
+        if ($this->previousSessionMetadata && $sessionMetadata->equalsWithinLastActivityThreshold($this->previousSessionMetadata, $this->lifetimeThreshold)) {
+            return;
+        }
 
         $tagsForCacheEntry = array_map(function ($tag) {
             return Session::TAG_PREFIX . $tag;
@@ -779,7 +796,7 @@ class Session implements CookieEnabledInterface
         $tagsForCacheEntry[] = $this->sessionIdentifier;
         $tagsForCacheEntry[] = 'session';
 
-        $this->metaDataCache->set($this->sessionIdentifier, $sessionInfo, $tagsForCacheEntry, 0);
+        $this->metaDataCache->set($this->sessionIdentifier, $sessionMetadata->jsonSerialize(), $tagsForCacheEntry, 0);
     }
 
     /**

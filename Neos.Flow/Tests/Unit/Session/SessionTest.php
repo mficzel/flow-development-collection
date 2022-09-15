@@ -73,6 +73,7 @@ class SessionTest extends UnitTestCase
     protected $settings = [
         'session' => [
             'inactivityTimeout' => 3600,
+            'lifetimeThreshold' => 60,
             'name' => 'Neos_Flow_Session',
             'garbageCollection' => [
                 'probability' => 1,
@@ -1123,6 +1124,7 @@ class SessionTest extends UnitTestCase
     {
         $settings = $this->settings;
         $settings['session']['inactivityTimeout'] = 1000;
+        $settings['session']['lifetimeThreshold'] = 60;
         $settings['session']['garbageCollection']['probability'] = 0;
         $settings['session']['garbageCollection']['maximumPerRun'] = 5;
 
