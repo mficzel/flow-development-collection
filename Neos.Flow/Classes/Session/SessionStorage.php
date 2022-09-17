@@ -15,53 +15,83 @@ namespace Neos\Flow\Session;
 
 use Neos\Cache\Backend\IterableBackendInterface;
 use Neos\Cache\Exception\InvalidBackendException;
-use Neos\Cache\Frontend\VariableFrontend;
+use Neos\Cache\Frontend\StringFrontend;
 use Neos\Flow\Annotations as Flow;
 
 class SessionStorage
 {
     /**
-     * Storage cache for this session
+     * Storage cache
      *
      * @Flow\Inject
-     * @var VariableFrontend
+     * @var StringFrontend
      */
     protected $storageCache;
 
     /**
-     * @return void
-     * @throws InvalidBackendException
+     * @var string[]
      */
+    protected $runtimeStorageCache = [];
+
+    /**
+     * @var bool
+     */
+    protected $useIgBinary;
+
     public function initializeObject()
     {
         if (!$this->storageCache->getBackend() instanceof IterableBackendInterface) {
             throw new InvalidBackendException(sprintf('The session storage cache must provide a backend implementing the IterableBackendInterface, but the given backend "%s" does not implement it.', get_class($this->storageCache->getBackend())), 1370964558);
         }
+        $this->useIgBinary = extension_loaded('igbinary');
     }
 
-    public function get(string $entryIdentifier)
+    public function retrieve(string $entryIdentifier)
     {
-        return $this->storageCache->get($entryIdentifier);
+        $serializedResult = $this->retrieveSerializedValue($entryIdentifier);
+        if ($serializedResult === false) {
+            return false;
+        }
+        return ($this->useIgBinary === true) ? igbinary_unserialize($serializedResult) : unserialize($serializedResult);
     }
 
-    public function set(string $entryIdentifier, $variable, array $tags = [], int $lifetime = null)
+    public function store(string $entryIdentifier, $variable, array $tags = [], int $lifetime = null): void
     {
-        return $this->storageCache->set($entryIdentifier, $variable, $tags, $lifetime);
+        $serializedValue = ($this->useIgBinary === true) ? igbinary_serialize($variable) : serialize($variable);
+        $previousSerializedValue = $this->retrieveSerializedValue($entryIdentifier);
+        if ($serializedValue == $previousSerializedValue) {
+            return;
+        }
+        $this->storeSerializedValue($entryIdentifier,$serializedValue,$tags,$lifetime);
+    }
+
+    protected function retrieveSerializedValue(string $entryIdentifier): false|string
+    {
+        if (array_key_exists($entryIdentifier, $this->runtimeStorageCache)) {
+            return $this->runtimeStorageCache[$entryIdentifier];
+        } else {
+            return $this->storageCache->get($entryIdentifier);
+        }
+    }
+
+    protected function storeSerializedValue(string $entryIdentifier, string $variable, array $tags = [], int $lifetime = null): void
+    {
+        $this->runtimeStorageCache[$entryIdentifier] = $variable;
+        $this->storageCache->set($entryIdentifier,$variable,$tags,$lifetime);
     }
 
     public function has(string $entryIdentifier): bool
     {
-        return $this->storageCache->has($entryIdentifier);
+        if (array_key_exists($entryIdentifier, $this->runtimeStorageCache)) {
+            return $this->runtimeStorageCache[$entryIdentifier] !== false;
+        } else {
+            return $this->storageCache->has($entryIdentifier);
+        }
     }
 
     public function flushByTag(string $tag): int
     {
+        $this->runtimeStorageCache = [];
         return $this->storageCache->flushByTag($tag);
     }
-
-    public function flushByTags(array $tags): int
-    {
-        return $this->storageCache->flushByTags($tags);
-    }
-
 }

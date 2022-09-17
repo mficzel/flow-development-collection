@@ -362,7 +362,7 @@ class Session implements CookieEnabledInterface
         if ($this->started === false && $this->canBeResumed()) {
             $this->started = true;
 
-            $sessionObjects = $this->sessionStorage->get($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'));
+            $sessionObjects = $this->sessionStorage->retrieve($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'));
             if (is_array($sessionObjects)) {
                 foreach ($sessionObjects as $object) {
                     if ($object instanceof ProxyInterface) {
@@ -376,7 +376,7 @@ class Session implements CookieEnabledInterface
             } else {
                 // Fallback for some malformed session data, if it is no array but something else.
                 // In this case, we reset all session objects (graceful degradation).
-                $this->sessionStorage->set($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'), [], [$this->storageIdentifier], 0);
+                $this->sessionStorage->store($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'), [], [$this->storageIdentifier], 0);
             }
 
             $lastActivitySecondsAgo = ($this->now - $this->lastActivityTimestamp);
@@ -438,7 +438,7 @@ class Session implements CookieEnabledInterface
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to get session data, but the session has not been started yet.', 1351162255);
         }
-        return $this->sessionStorage->get($this->storageIdentifier . md5($key));
+        return $this->sessionStorage->retrieve($this->storageIdentifier . md5($key));
     }
 
     /**
@@ -474,7 +474,7 @@ class Session implements CookieEnabledInterface
         if (is_resource($data)) {
             throw new Exception\DataNotSerializableException('The given data cannot be stored in a session, because it is of type "' . gettype($data) . '".', 1351162262);
         }
-        $this->sessionStorage->set($this->storageIdentifier . md5($key), $data, [$this->storageIdentifier], 0);
+        $this->sessionStorage->store($this->storageIdentifier . md5($key), $data, [$this->storageIdentifier], 0);
     }
 
     /**
