@@ -461,6 +461,9 @@ Neos\Flow\Session\Session:
         arguments:
           1:
             value: Flow_Session_MetaData
+
+Neos\Flow\Session\SessionStorage:
+  properties:
     storageCache:
       object:
         factoryObjectName: Neos\Flow\Cache\CacheManager

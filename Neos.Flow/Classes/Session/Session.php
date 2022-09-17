@@ -72,9 +72,9 @@ class Session implements CookieEnabledInterface
      * Storage cache for this session
      *
      * @Flow\Inject
-     * @var VariableFrontend
+     * @var SessionStorage
      */
-    protected $storageCache;
+    protected $sessionStorage;
 
     /**
      * @var string
@@ -264,9 +264,6 @@ class Session implements CookieEnabledInterface
         if (!$this->metaDataCache->getBackend() instanceof IterableBackendInterface) {
             throw new InvalidBackendException(sprintf('The session meta data cache must provide a backend implementing the IterableBackendInterface, but the given backend "%s" does not implement it.', get_class($this->metaDataCache->getBackend())), 1370964557);
         }
-        if (!$this->storageCache->getBackend() instanceof IterableBackendInterface) {
-            throw new InvalidBackendException(sprintf('The session storage cache must provide a backend implementing the IterableBackendInterface, but the given backend "%s" does not implement it.', get_class($this->storageCache->getBackend())), 1370964558);
-        }
     }
 
     /**
@@ -365,7 +362,7 @@ class Session implements CookieEnabledInterface
         if ($this->started === false && $this->canBeResumed()) {
             $this->started = true;
 
-            $sessionObjects = $this->storageCache->get($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'));
+            $sessionObjects = $this->sessionStorage->get($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'));
             if (is_array($sessionObjects)) {
                 foreach ($sessionObjects as $object) {
                     if ($object instanceof ProxyInterface) {
@@ -379,7 +376,7 @@ class Session implements CookieEnabledInterface
             } else {
                 // Fallback for some malformed session data, if it is no array but something else.
                 // In this case, we reset all session objects (graceful degradation).
-                $this->storageCache->set($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'), [], [$this->storageIdentifier], 0);
+                $this->sessionStorage->set($this->storageIdentifier . md5('Neos_Flow_Object_ObjectManager'), [], [$this->storageIdentifier], 0);
             }
 
             $lastActivitySecondsAgo = ($this->now - $this->lastActivityTimestamp);
@@ -441,7 +438,7 @@ class Session implements CookieEnabledInterface
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to get session data, but the session has not been started yet.', 1351162255);
         }
-        return $this->storageCache->get($this->storageIdentifier . md5($key));
+        return $this->sessionStorage->get($this->storageIdentifier . md5($key));
     }
 
     /**
@@ -456,7 +453,7 @@ class Session implements CookieEnabledInterface
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to check a session data entry, but the session has not been started yet.', 1352488661);
         }
-        return $this->storageCache->has($this->storageIdentifier . md5($key));
+        return $this->sessionStorage->has($this->storageIdentifier . md5($key));
     }
 
     /**
@@ -477,7 +474,7 @@ class Session implements CookieEnabledInterface
         if (is_resource($data)) {
             throw new Exception\DataNotSerializableException('The given data cannot be stored in a session, because it is of type "' . gettype($data) . '".', 1351162262);
         }
-        $this->storageCache->set($this->storageIdentifier . md5($key), $data, [$this->storageIdentifier], 0);
+        $this->sessionStorage->set($this->storageIdentifier . md5($key), $data, [$this->storageIdentifier], 0);
     }
 
     /**
@@ -609,7 +606,7 @@ class Session implements CookieEnabledInterface
         }
 
         $this->removeSessionMetaDataCacheEntry($this->sessionIdentifier);
-        $this->storageCache->flushByTag($this->storageIdentifier);
+        $this->sessionStorage->flushByTag($this->storageIdentifier);
         $this->started = false;
         $this->sessionIdentifier = null;
         $this->storageIdentifier = null;
@@ -653,7 +650,7 @@ class Session implements CookieEnabledInterface
             $lastActivitySecondsAgo = $this->now - $sessionInfo['lastActivityTimestamp'];
             if ($lastActivitySecondsAgo > $this->inactivityTimeout) {
                 if ($sessionInfo['storageIdentifier'] !== null) {
-                    $this->storageCache->flushByTag($sessionInfo['storageIdentifier']);
+                    $this->sessionStorage->flushByTag($sessionInfo['storageIdentifier']);
                     $sessionRemovalCount++;
                 }
                 $this->metaDataCache->remove($sessionIdentifier);
