@@ -11,6 +11,9 @@ Neos:
       # automatically.
       inactivityTimeout: 3600
 
+      # Specifies the tolerance for updating the last activity timestamp
+      inactivityThreshold: 300
+
       # A specific name for the session, used in the session cookie.
       # The session name must be alphanumerical and must contain at least one
       # character – not only numbers.
