@@ -198,7 +198,7 @@ class Session implements CookieEnabledInterface
      * @param array $tags
      * @return Session
      */
-    public static function createFromCookieAndSessionInformation(Cookie $sessionCookie, string $storageIdentifier, int $lastActivityTimestamp, array $tags = [])
+    public static function createFromCookieAndSessionInformation(Cookie $sessionCookie, string $storageIdentifier, int $lastActivityTimestamp, array $tags = []): self
     {
         $session = new static();
         $session->sessionMetaData = new SessionMetaData(
@@ -215,9 +215,8 @@ class Session implements CookieEnabledInterface
      * Injects the Flow settings
      *
      * @param array $settings Settings of the Flow package
-     * @return void
      */
-    public function injectSettings(array $settings)
+    public function injectSettings(array $settings): void
     {
         $this->sessionCookieName = $settings['session']['name'];
         $this->sessionCookieLifetime = (integer)$settings['session']['cookie']['lifetime'];
@@ -233,9 +232,8 @@ class Session implements CookieEnabledInterface
      * Injects the (system) logger based on PSR-3.
      *
      * @param LoggerInterface $logger
-     * @return void
      */
-    public function injectLogger(LoggerInterface $logger)
+    public function injectLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
     }
@@ -251,10 +249,9 @@ class Session implements CookieEnabledInterface
     /**
      * Tells if the session has been started already.
      *
-     * @return boolean
      * @api
      */
-    public function isStarted()
+    public function isStarted(): bool
     {
         return $this->started;
     }
@@ -266,7 +263,7 @@ class Session implements CookieEnabledInterface
      * @return boolean true if the session is remote, false if this is the current session
      * @api
      */
-    public function isRemote()
+    public function isRemote(): bool
     {
         return $this->remote;
     }
@@ -274,12 +271,11 @@ class Session implements CookieEnabledInterface
     /**
      * Starts the session, if it has not been already started
      *
-     * @return void
      * @throws \Exception
      * @see CookieEnabledInterface
      * @api
      */
-    public function start()
+    public function start(): void
     {
         if ($this->started === false) {
             $this->sessionMetaData = SessionMetaData::createWithTimestamp($this->now);
@@ -303,7 +299,7 @@ class Session implements CookieEnabledInterface
      * @return boolean
      * @api
      */
-    public function canBeResumed()
+    public function canBeResumed(): bool
     {
         if ($this->sessionCookie === null || $this->started === true) {
             return false;
@@ -327,7 +323,7 @@ class Session implements CookieEnabledInterface
      * @return null|integer If a session was resumed, the inactivity of this session since the last request is returned
      * @api
      */
-    public function resume()
+    public function resume(): null|int
     {
         if ($this->started === false && $this->canBeResumed()) {
             $this->started = true;
@@ -363,7 +359,7 @@ class Session implements CookieEnabledInterface
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function getId()
+    public function getId(): string
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to retrieve the session identifier, but the session has not been started yet.)', 1351171517);
@@ -380,7 +376,7 @@ class Session implements CookieEnabledInterface
      * @throws Exception\OperationNotSupportedException
      * @api
      */
-    public function renewId()
+    public function renewId(): string
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to renew the session identifier, but the session has not been started yet.', 1351182429);
@@ -404,7 +400,7 @@ class Session implements CookieEnabledInterface
      * @return mixed The contents associated with the given key
      * @throws Exception\SessionNotStartedException
      */
-    public function getData($key)
+    public function getData(string $key): mixed
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to get session data, but the session has not been started yet.', 1351162255);
@@ -419,7 +415,7 @@ class Session implements CookieEnabledInterface
      * @return boolean
      * @throws Exception\SessionNotStartedException
      */
-    public function hasKey($key)
+    public function hasKey(string $key): bool
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to check a session data entry, but the session has not been started yet.', 1352488661);
@@ -432,12 +428,11 @@ class Session implements CookieEnabledInterface
      *
      * @param string $key The key under which the data should be stored
      * @param mixed $data The data to be stored
-     * @return void
      * @throws Exception\DataNotSerializableException
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function putData($key, $data)
+    public function putData(string $key, mixed $data): void
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to create a session data entry, but the session has not been started yet.', 1351162259);
@@ -459,7 +454,7 @@ class Session implements CookieEnabledInterface
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function getLastActivityTimestamp()
+    public function getLastActivityTimestamp(): int
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to retrieve the last activity timestamp of a session which has not been started yet.', 1354290378);
@@ -474,12 +469,11 @@ class Session implements CookieEnabledInterface
      * recommended to use namespaced tags such as "Acme-Demo-MySpecialTag".
      *
      * @param string $tag The tag – must match be a valid cache frontend tag
-     * @return void
      * @throws Exception\SessionNotStartedException
      * @throws \InvalidArgumentException
      * @api
      */
-    public function addTag($tag)
+    public function addTag(string $tag): void
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to tag a session which has not been started yet.', 1355143533);
@@ -494,11 +488,10 @@ class Session implements CookieEnabledInterface
      * Removes the specified tag from this session.
      *
      * @param string $tag The tag – must match be a valid cache frontend tag
-     * @return void
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function removeTag($tag)
+    public function removeTag(string $tag): void
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to tag a session which has not been started yet.', 1355150140);
@@ -510,11 +503,11 @@ class Session implements CookieEnabledInterface
     /**
      * Returns the tags this session has been tagged with.
      *
-     * @return array The tags or an empty array if there aren't any
+     * @return string[] The tags or an empty array if there aren't any
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function getTags()
+    public function getTags(): array
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to retrieve tags from a session which has not been started yet.', 1355141501);
@@ -525,10 +518,9 @@ class Session implements CookieEnabledInterface
     /**
      * Updates the last activity time to "now".
      *
-     * @return void
      * @throws Exception\SessionNotStartedException
      */
-    public function touch()
+    public function touch(): void
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to touch a session, but the session has not been started yet.', 1354284318);
@@ -545,10 +537,9 @@ class Session implements CookieEnabledInterface
     /**
      * Explicitly writes and closes the session
      *
-     * @return void
      * @api
      */
-    public function close()
+    public function close(): void
     {
         $this->shutdownObject();
     }
@@ -557,11 +548,10 @@ class Session implements CookieEnabledInterface
      * Explicitly destroys all session data
      *
      * @param string $reason A reason for destroying the session – used by the LoggingAspect
-     * @return void
      * @throws Exception\SessionNotStartedException
      * @api
      */
-    public function destroy($reason = null)
+    public function destroy(string $reason = null): void
     {
         if ($this->started !== true) {
             throw new Exception\SessionNotStartedException('Tried to destroy a session which has not been started yet.', 1351162668);
@@ -583,13 +573,12 @@ class Session implements CookieEnabledInterface
      * This method must not be called manually – it is invoked by Flow's object
      * management.
      *
-     * @return void
      * @throws Exception\DataNotSerializableException
      * @throws Exception\SessionNotStartedException
      * @throws NotSupportedByBackendException
      * @throws \Neos\Cache\Exception
      */
-    public function shutdownObject()
+    public function shutdownObject(): void
     {
         if ($this->started === true && $this->remote === false) {
             if ($this->sessionMetaDataStore->has($this->sessionMetaData->sessionIdentifier)) {
@@ -605,7 +594,7 @@ class Session implements CookieEnabledInterface
      *
      * @return boolean true if the session expired, false if not
      */
-    protected function autoExpire()
+    protected function autoExpire(): bool
     {
         $lastActivitySecondsAgo = $this->now - $this->sessionMetaData->lastActivityTimestamp;
         $expired = false;
@@ -627,9 +616,8 @@ class Session implements CookieEnabledInterface
      * The session cache entry is also tagged with "session", the session identifier
      * and any custom tags of this session, prefixed with TAG_PREFIX.
      *
-     * @return void
      */
-    protected function writeSessionMetaDataCacheEntry()
+    protected function writeSessionMetaDataCacheEntry(): void
     {
         $this->sessionMetaDataStore->store($this->sessionMetaData);
     }
