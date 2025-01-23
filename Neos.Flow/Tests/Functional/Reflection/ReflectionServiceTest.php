@@ -409,4 +409,68 @@ class ReflectionServiceTest extends FunctionalTestCase
             $methodWithUnionParametersReduced
         );
     }
+
+    /**
+     * @test
+     */
+    public function unionReturnTypeAnnotationsWorkCorrectly()
+    {
+        $returnTypes = [
+            'returnTypeA' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeAnnotations::class, 'methodWithUnionReturnTypeA'),
+            'returnTypeB' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeAnnotations::class, 'methodWithUnionReturnTypesB'),
+            'returnTypeC' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeAnnotations::class, 'methodWithUnionReturnTypesC'),
+        ];
+
+        self::assertEquals(
+            [
+                'returnTypeA' => 'string|false',
+                'returnTypeB' => '\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations|false',
+                'returnTypeC' => '?\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations',
+            ],
+            $returnTypes
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function unionParameterTypeAnnotationsWorkCorrectly()
+    {
+        $methodWithUnionParameters = $this->reflectionService->getMethodParameters(Fixtures\DummyClassWithUnionTypeAnnotations::class, 'methodWithUnionParameters');
+
+        $methodWithUnionParametersReduced = array_map(
+            fn (array $item) => [
+                'type' => $item['type'],
+                'class' => $item['class'],
+                'allowsNull' => $item['allowsNull'],
+            ],
+            $methodWithUnionParameters
+        );
+
+        self::assertEquals(
+            [
+                'parameterA' => [
+                    'type' => 'string|false',
+                    'class' => 'string|false',
+                    'allowsNull' => false,
+                ],
+                'parameterB' => [
+                    'type' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations|false',
+                    'class' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations|false',
+                    'allowsNull' => false,
+                ],
+                'parameterB1' => [
+                    'type' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations|false',
+                    'class' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations|false',
+                    'allowsNull' => false,
+                ],
+                'parameterC' => [
+                    'type' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations',
+                    'class' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeAnnotations',
+                    'allowsNull' => true,
+                ],
+            ],
+            $methodWithUnionParametersReduced
+        );
+    }
 }
