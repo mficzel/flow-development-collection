@@ -17,6 +17,13 @@ namespace Neos\Flow\Tests\Functional\Reflection\Fixtures;
  */
 class DummyClassWithUnionTypeHints
 {
+    public function methodWithUnionParameters(
+        string|false $parameterA,
+        false|DummyClassWithUnionTypeHints $parameterB,
+        null|DummyClassWithUnionTypeHints $parameterC
+    ): void {
+    }
+
     public function methodWithUnionReturnTypeA(): string|false
     {
     }

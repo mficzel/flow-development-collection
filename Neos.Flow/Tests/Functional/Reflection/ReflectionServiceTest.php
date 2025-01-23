@@ -356,12 +356,57 @@ class ReflectionServiceTest extends FunctionalTestCase
      */
     public function unionReturnTypesWorkCorrectly()
     {
-        $returnTypeA = $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypeA');
-        $returnTypeB = $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypesB');
-        $returnTypeC = $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypesC');
+        $returnTypes = [
+            'returnTypeA' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypeA'),
+            'returnTypeB' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypesB'),
+            'returnTypeC' => $this->reflectionService->getMethodDeclaredReturnType(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionReturnTypesC'),
+        ];
 
-        self::assertEquals('string|false', $returnTypeA);
-        self::assertEquals('\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints|false', $returnTypeB);
-        self::assertEquals('?\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints', $returnTypeC);
+        self::assertEquals(
+            [
+                'returnTypeA' => 'string|false',
+                'returnTypeB' => '\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints|false',
+                'returnTypeC' => '?\Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints',
+            ],
+            $returnTypes
+        );
+    }
+
+    /**
+     * @test
+     */
+    public function unionParameterTypesWorkCorrectly()
+    {
+        $methodWithUnionParameters = $this->reflectionService->getMethodParameters(Fixtures\DummyClassWithUnionTypeHints::class, 'methodWithUnionParameters');
+
+        $methodWithUnionParametersReduced = array_map(
+            fn (array $item) => [
+                'type' => $item['type'],
+                'class' => $item['class'],
+                'allowsNull' => $item['allowsNull'],
+            ],
+            $methodWithUnionParameters
+        );
+
+        self::assertEquals(
+            [
+                'parameterA' => [
+                    'type' => 'string|false',
+                    'class' => 'string|false',
+                    'allowsNull' => false,
+                ],
+                'parameterB' => [
+                    'type' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints|false',
+                    'class' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints|false',
+                    'allowsNull' => false,
+                ],
+                'parameterC' => [
+                    'type' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints',
+                    'class' => 'Neos\Flow\Tests\Functional\Reflection\Fixtures\DummyClassWithUnionTypeHints',
+                    'allowsNull' => true,
+                ],
+            ],
+            $methodWithUnionParametersReduced
+        );
     }
 }
