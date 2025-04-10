@@ -141,7 +141,7 @@ class Compiler
             return false;
         }
 
-        if (method_exists($classReflection, 'isEnum') && $classReflection->isEnum()) {
+        if ($classReflection->isEnum()) {
             return false;
         }
 
