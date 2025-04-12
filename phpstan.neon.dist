@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Annotations
         - Neos.Flow/Classes/Aop
         - Neos.Flow/Classes/Cache
         - Neos.Flow/Classes/Cli
