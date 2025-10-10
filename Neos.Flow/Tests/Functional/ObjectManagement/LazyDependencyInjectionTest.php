@@ -11,7 +11,6 @@ namespace Neos\Flow\Tests\Functional\ObjectManagement;
  * source code.
  */
 
-use Neos\Flow\ObjectManagement\DependencyInjection\DependencyProxy;
 use Neos\Flow\Tests\FunctionalTestCase;
 
 /**
@@ -28,10 +27,13 @@ class LazyDependencyInjectionTest extends FunctionalTestCase
         $this->objectManager->forgetInstance(Fixtures\SingletonClassA::class);
 
         $object = $this->objectManager->get(Fixtures\ClassWithLazyDependencies::class);
-        self::assertInstanceOf(DependencyProxy::class, $object->lazyA);
+        $reflector = new \ReflectionClass($object);
+        self::assertInstanceOf(Fixtures\ClassWithLazyDependencies::class, $object->lazyA);
+        self::assertTrue($reflector->isUninitializedLazyObject($object));
 
         $actualObjectB = $object->lazyA->getObjectB();
-        $this->assertNotInstanceOf(DependencyProxy::class, $object->lazyA);
+        $this->assertNotInstanceOf(Fixtures\ClassWithLazyDependencies::class, $object->lazyA);
+        self::assertFalse($reflector->isUninitializedLazyObject($object));
 
         $objectA = $this->objectManager->get(Fixtures\SingletonClassA::class);
         $expectedObjectB = $this->objectManager->get(Fixtures\SingletonClassB::class);
@@ -59,8 +61,13 @@ class LazyDependencyInjectionTest extends FunctionalTestCase
         $object1 = $this->objectManager->get(Fixtures\ClassWithLazyDependencies::class);
         $object2 = $this->objectManager->get(Fixtures\AnotherClassWithLazyDependencies::class);
 
-        self::assertInstanceOf(DependencyProxy::class, $object1->lazyA);
-        self::assertInstanceOf(DependencyProxy::class, $object2->lazyA);
+        $reflector1 = new \ReflectionClass($object1);
+        $reflector2 = new \ReflectionClass($object1);
+
+        self::assertInstanceOf(Fixtures\ClassWithLazyDependencies::class, $object1->lazyA);
+        self::assertTrue($reflector1->isUninitializedLazyObject($object1));
+        self::assertInstanceOf(Fixtures\AnotherClassWithLazyDependencies::class, $object2->lazyA);
+        self::assertTrue($reflector2->isUninitializedLazyObject($object2));
 
         $object2->lazyA->getObjectB();
 

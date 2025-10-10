@@ -60,7 +60,7 @@ class ObjectManager implements ObjectManagerInterface
     protected array $objects = [];
 
     /**
-     * @var array<DependencyInjection\DependencyProxy>
+     * @var array<object> lazy proxy objects
      */
     protected array $dependencyProxies = [];
 
@@ -407,12 +407,14 @@ class ObjectManager implements ObjectManagerInterface
         if (!isset($this->dependencyProxies[$hash])) {
             return null;
         }
-        $this->dependencyProxies[$hash]->_addPropertyVariable($propertyReferenceVariable);
+        if ( $this->dependencyProxies[$hash] instanceof DependencyProxy) {
+            $this->dependencyProxies[$hash]->_addPropertyVariable($propertyReferenceVariable);
+        }
         return $this->dependencyProxies[$hash];
     }
 
     /**
-     * Creates a new DependencyProxy class for a dependency built through code
+     * Creates a new LazyProxy or a Dependency Proxy class for a dependency built through code
      * identified through "hash" for a dependency of class $className. The
      * closure in $builder contains code for actually creating the dependency
      * instance once it needs to be materialized.
@@ -427,11 +429,16 @@ class ObjectManager implements ObjectManagerInterface
      */
     public function createLazyDependency(string $hash, mixed &$propertyReferenceVariable, string $className, \Closure $builder): DependencyProxy
     {
+        try {
+            $reflector = new \ReflectionClass($className);
+            $lazyObject = $reflector->newLazyProxy($builder, \ReflectionClass::SKIP_INITIALIZATION_ON_SERIALIZE);
+            $this->dependencyProxies[ $hash ] = $lazyObject;
+            return $this->dependencyProxies[$hash];
+        } catch (\Throwable) {}
         $this->dependencyProxies[$hash] = new DependencyProxy($className, $builder);
         $this->dependencyProxies[$hash]->_addPropertyVariable($propertyReferenceVariable);
         return $this->dependencyProxies[$hash];
     }
-
 
     /**
      * Unsets the instance of the given object
