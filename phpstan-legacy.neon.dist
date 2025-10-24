@@ -6,7 +6,6 @@ parameters:
         - Neos.Error.Messages/Classes
         - Neos.Flow/Classes
         - Neos.Flow.Log/Classes
-        - Neos.FluidAdaptor/Classes
     bootstrapFiles:
          - bootstrap-phpstan.php
     excludePaths:
