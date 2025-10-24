@@ -1,6 +1,8 @@
 parameters:
     level: 8
     paths:
+        - Neos.Http.Factories/Classes
+        - Neos.Kickstarter/Classes
         - Neos.Utility.Arrays/Classes
         - Neos.Utility.Files/Classes
         - Neos.Utility.MediaTypes/Classes

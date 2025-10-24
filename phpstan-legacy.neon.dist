@@ -7,8 +7,6 @@ parameters:
         - Neos.Flow/Classes
         - Neos.Flow.Log/Classes
         - Neos.FluidAdaptor/Classes
-        - Neos.Http.Factories/Classes
-        - Neos.Kickstarter/Classes
     bootstrapFiles:
          - bootstrap-phpstan.php
     excludePaths:
