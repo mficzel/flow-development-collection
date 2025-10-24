@@ -13,7 +13,7 @@
         "lint:phpstan-legacy": "../../bin/phpstan analyse -c phpstan-legacy.neon.dist",
         "lint:phpstan": "../../bin/phpstan analyse -c phpstan.neon.dist",
         "lint": [
-            "@lint:phpstan",
+            "@lint:phpstan -v",
             "@lint:phpstan-legacy"
         ]
     },
