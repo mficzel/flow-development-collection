@@ -1,14 +1,14 @@
 parameters:
-    level: 8
+    level: 3
     paths:
-        - Neos.Utility.Arrays/Classes
-        - Neos.Utility.Files/Classes
-        - Neos.Utility.MediaTypes/Classes
-        - Neos.Utility.ObjectHandling/Classes
-        - Neos.Utility.OpcodeCache/Classes
-        - Neos.Utility.Pdo/Classes
-        - Neos.Utility.Schema/Classes
-        - Neos.Utility.Unicode/Classes
+        - Neos.Cache/Classes
+        - Neos.Eel/Classes
+        - Neos.Error.Messages/Classes
+        - Neos.Flow/Classes
+        - Neos.Flow.Log/Classes
+        - Neos.FluidAdaptor/Classes
+        - Neos.Http.Factories/Classes
+        - Neos.Kickstarter/Classes
     bootstrapFiles:
          - bootstrap-phpstan.php
     excludePaths:

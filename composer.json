@@ -10,9 +10,11 @@
             "../../flow doctrine:migrate --quiet",
             "../../bin/behat -f progress -c Neos.Flow/Tests/Behavior/behat.yml"
         ],
-        "lint:phpstan": "../../bin/phpstan analyse",
+        "lint:phpstan-legacy": "../../bin/phpstan analyse -c phpstan-legacy.neon.dist",
+        "lint:phpstan": "../../bin/phpstan analyse -c phpstan.neon.dist",
         "lint": [
-            "@lint:phpstan"
+            "@lint:phpstan",
+            "@lint:phpstan-legacy"
         ]
     },
     "require": {
