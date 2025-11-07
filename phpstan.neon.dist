@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Security
         - Neos.Flow/Classes/Session
         - Neos.Flow/Classes/SignalSlot
         - Neos.Flow/Classes/Utility
