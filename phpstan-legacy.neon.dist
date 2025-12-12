@@ -1,18 +1,11 @@
+# packages we yet only lint with lvl 3 - thus _legacy_ configuration :)
 parameters:
-    level: 8
+    level: 3
     paths:
-        - Neos.Flow.Log/Classes
-        - Neos.FluidAdaptor/Classes
-        - Neos.Http.Factories/Classes
-        - Neos.Kickstarter/Classes
-        - Neos.Utility.Arrays/Classes
-        - Neos.Utility.Files/Classes
-        - Neos.Utility.MediaTypes/Classes
-        - Neos.Utility.ObjectHandling/Classes
-        - Neos.Utility.OpcodeCache/Classes
-        - Neos.Utility.Pdo/Classes
-        - Neos.Utility.Schema/Classes
-        - Neos.Utility.Unicode/Classes
+        - Neos.Cache/Classes
+        - Neos.Eel/Classes
+        - Neos.Error.Messages/Classes
+        - Neos.Flow/Classes
     bootstrapFiles:
          - bootstrap-phpstan.php
     excludePaths:
@@ -25,6 +18,3 @@ parameters:
             - Neos.Eel/Classes/InterpretedEelParser.php
             - Neos.Eel/Classes/CompilingEelParser.php
             - Neos.Flow/Classes/Security/Authorization/Privilege/Entity/Doctrine/EntityPrivilegeExpressionEvaluator.php
-    scanDirectories:
-        - Neos.Flow/Tests
-        - Neos.Flow/Classes/Error
