@@ -1,3 +1,4 @@
+# packages we yet only lint with lvl 3 - thus _legacy_ configuration :)
 parameters:
     level: 3
     paths:
