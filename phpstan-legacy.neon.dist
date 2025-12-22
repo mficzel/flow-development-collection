@@ -19,6 +19,8 @@ parameters:
             - Neos.Eel/Classes/CompilingEelParser.php
             - Neos.Flow/Classes/Security/Authorization/Privilege/Entity/Doctrine/EntityPrivilegeExpressionEvaluator.php
             # already on level 8
+            - Neos.Flow/Classes/Reflection
+            - Neos.Flow/Classes/ResourceManagement
             - Neos.Flow/Classes/Security
             - Neos.Flow/Classes/Session
             - Neos.Flow/Classes/SignalSlot
