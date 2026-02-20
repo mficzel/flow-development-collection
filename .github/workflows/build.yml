@@ -89,12 +89,7 @@ jobs:
 
       - name: Setup PostgreSQL ${{ matrix.postgresql-versions }}
         if: ${{ matrix.postgresql-versions != '' }}
-        uses: harmon758/postgresql-action@v1
-        with:
-          postgresql version: ${{ matrix.postgresql-versions }}
-          postgresql db: 'flow_functional_testing'
-          postgresql user: 'neos'
-          postgresql password: 'neos'
+        run: docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=neos -e POSTGRES_PASSWORD=neos -e POSTGRES_DB=flow_functional_testing postgres:${{ matrix.postgresql-versions }}
 
       - name: Setup MariaDB ${{ matrix.mariadb-versions }}
         if: ${{ matrix.mariadb-versions != '' }}
