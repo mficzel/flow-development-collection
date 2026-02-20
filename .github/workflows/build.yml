@@ -59,6 +59,14 @@ jobs:
         ports:
           - "11211:11211"
         # options: --health-cmd "timeout 5 bash -c 'cat < /dev/null > /dev/udp/127.0.0.1/11211'" --health-interval 10s --health-timeout 5s --health-retries 5
+      postgres:
+        image: ${{ ( matrix.postgresql-versions != '' ) && format('postgres:{0}', matrix.postgresql-versions) || '' }}
+        env:
+          POSTGRES_DB: flow_functional_testing
+          POSTGRES_USER: neos
+          POSTGRES_PASSWORD: neos
+        ports:
+          - 5432:5432
 
     env:
       FLOW_CONTEXT: Testing
@@ -86,11 +94,6 @@ jobs:
           extensions: mbstring, xml, json, zlib, iconv, intl, pdo_sqlite, mysql, pgsql, redis, memcached, memcache, apcu
           coverage: xdebug #optional
           ini-values: date.timezone="Africa/Tunis", opcache.fast_shutdown=0, apc.enable_cli=on
-
-      - name: Setup PostgreSQL ${{ matrix.postgresql-versions }}
-        if: ${{ matrix.postgresql-versions != '' }}
-        working-directory: ${{ env.FLOW_FOLDER }}
-        run: docker run -d --name postgres -p 5432:5432 -e POSTGRES_USER=neos -e POSTGRES_PASSWORD=neos -e POSTGRES_DB=flow_functional_testing postgres:${{ matrix.postgresql-versions }}
 
       - name: Setup MariaDB ${{ matrix.mariadb-versions }}
         if: ${{ matrix.mariadb-versions != '' }}
