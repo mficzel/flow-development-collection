@@ -41,7 +41,7 @@ jobs:
 
           - php-versions: '8.5'
             mariadb-versions: '12.2'
-            postgresql-versions: '' # skip postgresql setup
+            postgresql-versions: '18-alpine'
             static-analysis: 'no'
             experimental: true
             dependencies: 'highest'
