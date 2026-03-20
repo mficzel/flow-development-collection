@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.NEOS_BOT_TOKEN }}
 
       - name: Build API documentation
         uses: sudo-bot/action-doctum@v5
@@ -34,7 +37,6 @@ jobs:
       - name: Commit update
         run: |
           cd docs-site
-          git config --local --unset-all "http.https://github.com/.extraheader" || true
           git config --global user.email "ops@neos.io"
           git config --global user.name "Neos Bot"
           if [ -z "$(git status --porcelain)" ]; then
