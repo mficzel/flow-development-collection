@@ -34,7 +34,7 @@ jobs:
       - name: Commit update
         run: |
           cd docs-site
-          git config --local --unset-all "http.https://github.com/.extraheader"
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
           git config --global user.email "ops@neos.io"
           git config --global user.name "Neos Bot"
           if [ -z "$(git status --porcelain)" ]; then
