@@ -24,6 +24,8 @@ jobs:
         with:
           repository: neos/neos.github.io
           path: docs-site
+          fetch-depth: 0
+          token: ${{ secrets.NEOS_BOT_TOKEN }}
 
       - name: Move rendered docs to site
         run: |
@@ -34,7 +36,6 @@ jobs:
       - name: Commit update
         run: |
           cd docs-site
-          git config --local --unset-all "http.https://github.com/.extraheader" || true
           git config --global user.email "ops@neos.io"
           git config --global user.name "Neos Bot"
           if [ -z "$(git status --porcelain)" ]; then
