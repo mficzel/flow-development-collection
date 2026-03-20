@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.NEOS_BOT_TOKEN }}
 
       - name: Build API documentation
         uses: sudo-bot/action-doctum@v5
@@ -27,6 +24,8 @@ jobs:
         with:
           repository: neos/neos.github.io
           path: docs-site
+          fetch-depth: 0
+          token: ${{ secrets.NEOS_BOT_TOKEN }}
 
       - name: Move rendered docs to site
         run: |
