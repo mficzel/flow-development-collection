@@ -175,6 +175,7 @@ jobs:
         if: ${{ matrix.static-analysis == 'no' && matrix.dependencies != 'lowest' }}
         #if: env.BEHAT == true
         run: |
+          export FLOW_CONTEXT=Testing/Behat
           cd Packages/Framework
           composer test:behavioral
 
@@ -212,6 +213,7 @@ jobs:
         if: ${{ matrix.static-analysis == 'no' && matrix.dependencies != 'lowest' }}
         #if: env.BEHAT == true
         run: |
+          export FLOW_CONTEXT=Testing/Behat
           cd Packages/Framework
           composer test:behavioral
 
