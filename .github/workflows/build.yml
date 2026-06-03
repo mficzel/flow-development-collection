@@ -31,7 +31,7 @@ jobs:
         include:
           - php-versions: '8.0'
             mysqlport: false # skip mariadb setup
-            psqlport: false # skip postgresql setup
+            pgsqlport: false # skip postgresql setup
             static-analysis: 'yes'
             experimental: true
             dependencies: 'highest'
