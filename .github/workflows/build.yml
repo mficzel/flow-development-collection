@@ -151,9 +151,16 @@ jobs:
                   user: 'root'
                   password: 'neos'
                   dbname: 'flow_functional_testing'
+
+              # see Neos\Flow\Tests\Functional\Mvc\RoutingTest
               mvc:
                 routes:
-                  'Neos.Flow': TRUE
+                  "Neos.Flow:TestingAttributes":
+                    providerFactory: Neos\Flow\Mvc\Routing\AttributeRoutesProviderFactory
+                    providerOptions:
+                      classNames:
+                        - Neos\Flow\Tests\Functional\Mvc\Fixtures\Controller\*Controller
+                  "Neos.Flow": true
           EOF
           echo "Running in context '$FLOW_CONTEXT'"
           ./flow configuration:show
@@ -196,9 +203,16 @@ jobs:
                   charset: 'utf8'
                   defaultTableOptions:
                     charset: 'utf8'
+
+              # see Neos\Flow\Tests\Functional\Mvc\RoutingTest
               mvc:
                 routes:
-                  'Neos.Flow': TRUE
+                  "Neos.Flow:TestingAttributes":
+                    providerFactory: Neos\Flow\Mvc\Routing\AttributeRoutesProviderFactory
+                    providerOptions:
+                      classNames:
+                        - Neos\Flow\Tests\Functional\Mvc\Fixtures\Controller\*Controller
+                  "Neos.Flow": true
           EOF
 
       - name: Run unit tests (PGSQL)
