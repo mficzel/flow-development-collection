@@ -32,7 +32,7 @@ jobs:
       # Local composite actions are resolved from the workspace root, so the
       # workflow's own repository must be checked out before `prepare-flow` runs.
       - name: Checkout workflow repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: ./.github/actions/prepare-flow
         with:
@@ -75,7 +75,7 @@ jobs:
       # Local composite actions are resolved from the workspace root, so the
       # workflow's own repository must be checked out before `prepare-flow` runs.
       - name: Checkout workflow repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: ./.github/actions/prepare-flow
         with:
@@ -140,7 +140,7 @@ jobs:
       # Local composite actions are resolved from the workspace root, so the
       # workflow's own repository must be checked out before `prepare-flow` runs.
       - name: Checkout workflow repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: ./.github/actions/prepare-flow
         with:
@@ -209,7 +209,7 @@ jobs:
       # Local composite actions are resolved from the workspace root, so the
       # workflow's own repository must be checked out before `prepare-flow` runs.
       - name: Checkout workflow repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: ./.github/actions/prepare-flow
         with:
