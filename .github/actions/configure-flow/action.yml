@@ -27,10 +27,10 @@ runs:
             persistence:
               backendOptions:
                 host: '127.0.0.1'
-                port: ${{ inputs.port }}
+                port: ${{ inputs.db-port }}
                 dbname: 'flow_functional_testing'
         EOF
-        if [ "${{ inputs.engine }}" = "pgsql" ]; then
+        if [ "${{ inputs.db-engine }}" = "pgsql" ]; then
           cat >> Configuration/Testing/Settings.yaml <<EOF
                 driver: pdo_pgsql
                 user: 'neos'
