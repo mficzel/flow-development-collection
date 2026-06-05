@@ -1,0 +1,64 @@
+name: 'Prepare Flow'
+description: 'Checkout Flow collection + distribution, set up PHP, install Composer dependencies'
+inputs:
+  php-version:
+    description: 'PHP version for shivammathur/setup-php'
+    required: true
+  dependencies:
+    description: 'Composer dependency strategy: highest | lowest | locked'
+    default: 'highest'
+  composer-arguments:
+    description: 'Extra composer arguments (e.g. --ignore-platform-reqs)'
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: Set Flow target branch name
+      shell: bash
+      run: echo "FLOW_TARGET_VERSION=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_ENV"
+
+    - name: Checkout collection
+      uses: actions/checkout@v4
+      with:
+        path: ${{ env.FLOW_FOLDER }}
+
+    - name: Setup PHP ${{ inputs.php-version }}
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: mbstring, xml, json, zlib, iconv, intl, pdo_sqlite, mysql, pgsql, redis, memcached, memcache, apcu
+        coverage: xdebug
+        ini-values: date.timezone="Africa/Tunis", opcache.fast_shutdown=0, apc.enable_cli=on
+
+    - name: Checkout development distribution
+      uses: actions/checkout@v4
+      with:
+        repository: neos/flow-development-distribution
+        ref: ${{ env.FLOW_TARGET_VERSION }}
+        path: ${{ env.FLOW_DIST_FOLDER }}
+
+    - name: Set alias branch name
+      shell: bash
+      run: if [ "${FLOW_TARGET_VERSION}" == "master" ]; then echo "FLOW_BRANCH_ALIAS=dev-master"; else echo "FLOW_BRANCH_ALIAS=${FLOW_TARGET_VERSION}.x-dev"; fi >> "$GITHUB_ENV"
+
+    - name: Update composer.json
+      shell: bash
+      working-directory: ${{ env.FLOW_DIST_FOLDER }}
+      run: |
+        git -C ../${{ env.FLOW_FOLDER }} checkout -b build
+        composer config repositories.flow '{ "type": "path", "url": "../${{ env.FLOW_FOLDER }}", "options": { "symlink": false } }'
+        composer require --no-update neos/flow-development-collection:"dev-build as ${{ env.FLOW_BRANCH_ALIAS }}"
+
+    - name: Cache Composer packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/composer
+          ${{ env.FLOW_DIST_FOLDER }}/Packages
+        key: php-${{ inputs.php-version }}-${{ inputs.dependencies }}${{ hashFiles('**/composer.json') }}
+        restore-keys: php-${{ inputs.php-version }}-${{ inputs.dependencies }}
+
+    - name: Install dependencies
+      shell: bash
+      working-directory: ${{ env.FLOW_DIST_FOLDER }}
+      run: composer ${{ inputs.dependencies == 'locked' && 'install' || 'update' }} --no-progress --no-interaction ${{ inputs.dependencies == 'lowest' && '--prefer-lowest' || '' }} ${{ inputs.composer-arguments }}
