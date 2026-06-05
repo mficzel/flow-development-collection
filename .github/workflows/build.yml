@@ -20,8 +20,6 @@ jobs:
       contents: read # to fetch code (actions/checkout)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: "Static analysis (PHP ${{ matrix.php }})"
-    # Static analysis is informational only and must not block the build (was experimental before).
-    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -40,6 +38,8 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           dependencies: ${{ matrix.dependencies || 'highest' }}
+          collection-path: ${{ env.FLOW_FOLDER }}
+          distribution-path: ${{ env.FLOW_DIST_FOLDER }}
 
       - name: Static analysis
         run: cd Packages/Framework && composer lint
@@ -81,6 +81,8 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           dependencies: ${{ matrix.dependencies || 'highest' }}
+          collection-path: ${{ env.FLOW_FOLDER }}
+          distribution-path: ${{ env.FLOW_DIST_FOLDER }}
 
       - name: Run unit tests
         run: composer test-unit -- --verbose
@@ -89,10 +91,8 @@ jobs:
     permissions:
       contents: read # to fetch code (actions/checkout)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    name: "Functional tests (PHP ${{ matrix.php }}, ${{ matrix.db.engine }}, deps: ${{ matrix.dependencies || 'highest' }})"
+    name: "Functional tests (PHP ${{ matrix.php }}, ${{ matrix.db.image }}, deps: ${{ matrix.dependencies || 'highest' }})"
     runs-on: ubuntu-latest
-    # Bleeding-edge engines (MariaDB 12.2 / PostgreSQL 18) are allowed to fail.
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -107,9 +107,9 @@ jobs:
           # MySQL engines.
           - { php: '8.4', db: { engine: mysql, image: 'mysql:8.0', port: 3306, options: '--health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3' } }
           - { php: '8.4', db: { engine: mysql, image: 'mysql:8.4', port: 3306, options: '--health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3' } }
-          # Bleeding-edge engines (experimental).
-          - { php: '8.5', experimental: true, db: { engine: mysql, image: 'mariadb:12.2', port: 3306, options: '--health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3' } }
-          - { php: '8.5', experimental: true, db: { engine: pgsql, image: 'postgres:18-alpine', port: 5432, options: '--health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3' } }
+          # Bleeding-edge engines.
+          - { php: '8.5', db: { engine: mysql, image: 'mariadb:12.2', port: 3306, options: '--health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3' } }
+          - { php: '8.5', db: { engine: pgsql, image: 'postgres:18-alpine', port: 5432, options: '--health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3' } }
     services:
       database:
         image: ${{ matrix.db.image }}
@@ -146,43 +146,15 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           dependencies: ${{ matrix.dependencies || 'highest' }}
+          collection-path: ${{ env.FLOW_FOLDER }}
+          distribution-path: ${{ env.FLOW_DIST_FOLDER }}
 
-      - name: Configure database
-        run: |
-          rm -f Configuration/Routes.yaml Configuration/Testing/Settings.yaml
-          cat > Configuration/Testing/Settings.yaml <<EOF
-          Neos:
-            Flow:
-              persistence:
-                backendOptions:
-                  host: '127.0.0.1'
-                  port: ${{ matrix.db.port }}
-                  dbname: 'flow_functional_testing'
-          EOF
-          if [ "${{ matrix.db.engine }}" = "pgsql" ]; then
-            cat >> Configuration/Testing/Settings.yaml <<EOF
-                  driver: pdo_pgsql
-                  user: 'neos'
-                  password: 'neos'
-                  charset: 'utf8'
-                  defaultTableOptions:
-                    charset: 'utf8'
-          EOF
-          else
-            cat >> Configuration/Testing/Settings.yaml <<EOF
-                  driver: pdo_mysql
-                  user: 'root'
-                  password: 'neos'
-          EOF
-          fi
-          cat >> Configuration/Testing/Settings.yaml <<EOF
-              mvc:
-                routes:
-                  'Neos.Flow': TRUE
-          EOF
-          echo "Running in context '$FLOW_CONTEXT'"
-          ./flow configuration:show
-          ./flow routing:list
+      - uses: ./.github/actions/configure-flow
+        with:
+          db-engine: ${{ matrix.db.engine }}
+          db-port: ${{ matrix.db.port }}
+          working-directory: ${{ env.FLOW_DIST_FOLDER }}
+          flow-context: ${{ env.FLOW_CONTEXT }}
 
       - name: Run functional tests
         run: composer test-func -- --verbose
@@ -193,8 +165,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     name: "Behavioral tests (PHP ${{ matrix.php }}, ${{ matrix.db.engine }})"
     runs-on: ubuntu-latest
-    # Bleeding-edge engines (MariaDB 12.2 / PostgreSQL 18) are allowed to fail.
-    continue-on-error: ${{ matrix.experimental == true }}
     strategy:
       fail-fast: false
       matrix:
@@ -206,9 +176,9 @@ jobs:
           # MySQL engines.
           - { php: '8.4', db: { engine: mysql, image: 'mysql:8.0', port: 3306, options: '--health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3' } }
           - { php: '8.4', db: { engine: mysql, image: 'mysql:8.4', port: 3306, options: '--health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3' } }
-          # Bleeding-edge engines (experimental).
-          - { php: '8.5', experimental: true, db: { engine: mysql, image: 'mariadb:12.2', port: 3306, options: '--health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3' } }
-          - { php: '8.5', experimental: true, db: { engine: pgsql, image: 'postgres:18-alpine', port: 5432, options: '--health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3' } }
+          # Bleeding-edge engines.
+          - { php: '8.5', db: { engine: mysql, image: 'mariadb:12.2', port: 3306, options: '--health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=10s --health-timeout=5s --health-retries=3' } }
+          - { php: '8.5', db: { engine: pgsql, image: 'postgres:18-alpine', port: 5432, options: '--health-cmd=pg_isready --health-interval=10s --health-timeout=5s --health-retries=3' } }
     services:
       database:
         image: ${{ matrix.db.image }}
@@ -245,43 +215,15 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           dependencies: ${{ matrix.dependencies || 'highest' }}
+          collection-path: ${{ env.FLOW_FOLDER }}
+          distribution-path: ${{ env.FLOW_DIST_FOLDER }}
 
-      - name: Configure database
-        run: |
-          rm -f Configuration/Routes.yaml Configuration/Testing/Settings.yaml
-          cat > Configuration/Testing/Settings.yaml <<EOF
-          Neos:
-            Flow:
-              persistence:
-                backendOptions:
-                  host: '127.0.0.1'
-                  port: ${{ matrix.db.port }}
-                  dbname: 'flow_functional_testing'
-          EOF
-          if [ "${{ matrix.db.engine }}" = "pgsql" ]; then
-            cat >> Configuration/Testing/Settings.yaml <<EOF
-                  driver: pdo_pgsql
-                  user: 'neos'
-                  password: 'neos'
-                  charset: 'utf8'
-                  defaultTableOptions:
-                    charset: 'utf8'
-          EOF
-          else
-            cat >> Configuration/Testing/Settings.yaml <<EOF
-                  driver: pdo_mysql
-                  user: 'root'
-                  password: 'neos'
-          EOF
-          fi
-          cat >> Configuration/Testing/Settings.yaml <<EOF
-              mvc:
-                routes:
-                  'Neos.Flow': TRUE
-          EOF
-          echo "Running in context '$FLOW_CONTEXT'"
-          ./flow configuration:show
-          ./flow routing:list
+      - uses: ./.github/actions/configure-flow
+        with:
+          db-engine: ${{ matrix.db.engine }}
+          db-port: ${{ matrix.db.port }}
+          working-directory: ${{ env.FLOW_DIST_FOLDER }}
+          flow-context: ${{ env.FLOW_CONTEXT }}
 
       - name: Run behat tests
         run: |

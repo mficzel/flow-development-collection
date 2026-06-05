@@ -10,17 +10,31 @@ inputs:
   composer-arguments:
     description: 'Extra composer arguments (e.g. --ignore-platform-reqs)'
     default: ''
+  collection-path:
+    description: 'Directory the Flow development collection is checked out into'
+    default: 'flow-development-collection'
+  distribution-path:
+    description: 'Directory the Flow development distribution is checked out into'
+    default: 'flow-development-distribution'
 runs:
   using: 'composite'
   steps:
-    - name: Set Flow target branch name
+    - name: Resolve Flow target branch name
+      id: flow
       shell: bash
-      run: echo "FLOW_TARGET_VERSION=${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}" >> "$GITHUB_ENV"
+      run: |
+        TARGET="${GITHUB_BASE_REF:-${GITHUB_REF#refs/heads/}}"
+        echo "target-version=${TARGET}" >> "$GITHUB_OUTPUT"
+        if [ "${TARGET}" == "master" ]; then
+          echo "branch-alias=dev-master" >> "$GITHUB_OUTPUT"
+        else
+          echo "branch-alias=${TARGET}.x-dev" >> "$GITHUB_OUTPUT"
+        fi
 
     - name: Checkout collection
       uses: actions/checkout@v4
       with:
-        path: ${{ env.FLOW_FOLDER }}
+        path: ${{ inputs.collection-path }}
 
     - name: Setup PHP ${{ inputs.php-version }}
       uses: shivammathur/setup-php@v2
@@ -34,31 +48,27 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: neos/flow-development-distribution
-        ref: ${{ env.FLOW_TARGET_VERSION }}
-        path: ${{ env.FLOW_DIST_FOLDER }}
-
-    - name: Set alias branch name
-      shell: bash
-      run: if [ "${FLOW_TARGET_VERSION}" == "master" ]; then echo "FLOW_BRANCH_ALIAS=dev-master"; else echo "FLOW_BRANCH_ALIAS=${FLOW_TARGET_VERSION}.x-dev"; fi >> "$GITHUB_ENV"
+        ref: ${{ steps.flow.outputs.target-version }}
+        path: ${{ inputs.distribution-path }}
 
     - name: Update composer.json
       shell: bash
-      working-directory: ${{ env.FLOW_DIST_FOLDER }}
+      working-directory: ${{ inputs.distribution-path }}
       run: |
-        git -C ../${{ env.FLOW_FOLDER }} checkout -b build
-        composer config repositories.flow '{ "type": "path", "url": "../${{ env.FLOW_FOLDER }}", "options": { "symlink": false } }'
-        composer require --no-update neos/flow-development-collection:"dev-build as ${{ env.FLOW_BRANCH_ALIAS }}"
+        git -C ../${{ inputs.collection-path }} checkout -b build
+        composer config repositories.flow '{ "type": "path", "url": "../${{ inputs.collection-path }}", "options": { "symlink": false } }'
+        composer require --no-update neos/flow-development-collection:"dev-build as ${{ steps.flow.outputs.branch-alias }}"
 
     - name: Cache Composer packages
       uses: actions/cache@v4
       with:
         path: |
           ~/.cache/composer
-          ${{ env.FLOW_DIST_FOLDER }}/Packages
+          ${{ inputs.distribution-path }}/Packages
         key: php-${{ inputs.php-version }}-${{ inputs.dependencies }}${{ hashFiles('**/composer.json') }}
         restore-keys: php-${{ inputs.php-version }}-${{ inputs.dependencies }}
 
     - name: Install dependencies
       shell: bash
-      working-directory: ${{ env.FLOW_DIST_FOLDER }}
+      working-directory: ${{ inputs.distribution-path }}
       run: composer ${{ inputs.dependencies == 'locked' && 'install' || 'update' }} --no-progress --no-interaction ${{ inputs.dependencies == 'lowest' && '--prefer-lowest' || '' }} ${{ inputs.composer-arguments }}
