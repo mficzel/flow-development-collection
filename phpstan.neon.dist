@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Property
         - Neos.Flow/Classes/Reflection
         - Neos.Flow/Classes/ResourceManagement
         - Neos.Flow/Classes/Security
