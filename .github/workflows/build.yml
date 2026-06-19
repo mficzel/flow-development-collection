@@ -177,6 +177,9 @@ jobs:
           working-directory: ${{ env.FLOW_DIST_FOLDER }}
           flow-context: ${{ env.FLOW_CONTEXT }}
 
+      - name: Run migrations to test if they work
+        run: FLOW_CONTEXT=Testing ./flow doctrine:migrate
+
       - name: Run functional tests
         run: composer test-func -- --verbose
 
