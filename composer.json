@@ -11,6 +11,7 @@
             "../../bin/behat -f progress -c Neos.Flow/Tests/Behavior/behat.yml"
         ],
         "lint:phpstan-legacy": "../../bin/phpstan analyse -c phpstan-legacy.neon.dist -v",
+        "lint:phpstan-cc": "../../bin/phpstan clear-result-cache",
         "lint:phpstan": "../../bin/phpstan analyse -c phpstan.neon.dist -v --memory-limit 256M",
         "lint": [
             "@lint:phpstan",
