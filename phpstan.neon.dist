@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/ObjectManagement
         - Neos.Flow/Classes/Package
         - Neos.Flow/Classes/Persistence
         - Neos.Flow/Classes/Property
