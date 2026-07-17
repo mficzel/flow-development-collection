@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Cli
         - Neos.Flow/Classes/Command
         - Neos.Flow/Classes/Composer
         - Neos.Flow/Classes/Configuration
