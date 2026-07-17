@@ -1,6 +1,8 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Log
+        - Neos.Flow/Classes/Monitor
         - Neos.Flow/Classes/Mvc
         - Neos.Flow/Classes/ObjectManagement
         - Neos.Flow/Classes/Package
