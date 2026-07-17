@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Configuration
         - Neos.Flow/Classes/Core
         - Neos.Flow/Classes/Error
         - Neos.Flow/Classes/Http
