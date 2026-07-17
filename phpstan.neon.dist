@@ -1,6 +1,7 @@
 parameters:
     level: 8
     paths:
+        - Neos.Flow/Classes/Http
         - Neos.Flow/Classes/I18n
         - Neos.Flow/Classes/Log
         - Neos.Flow/Classes/Monitor
