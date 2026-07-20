@@ -1,31 +1,7 @@
 parameters:
     level: 8
     paths:
-        - Neos.Flow/Classes/Annotations
-        - Neos.Flow/Classes/Aop
-        - Neos.Flow/Classes/Cache
-        - Neos.Flow/Classes/Cli
-        - Neos.Flow/Classes/Command
-        - Neos.Flow/Classes/Composer
-        - Neos.Flow/Classes/Configuration
-        - Neos.Flow/Classes/Core
-        - Neos.Flow/Classes/Error
-        - Neos.Flow/Classes/Http
-        - Neos.Flow/Classes/I18n
-        - Neos.Flow/Classes/Log
-        - Neos.Flow/Classes/Monitor
-        - Neos.Flow/Classes/Mvc
-        - Neos.Flow/Classes/ObjectManagement
-        - Neos.Flow/Classes/Package
-        - Neos.Flow/Classes/Persistence
-        - Neos.Flow/Classes/Property
-        - Neos.Flow/Classes/Reflection
-        - Neos.Flow/Classes/ResourceManagement
-        - Neos.Flow/Classes/Security
-        - Neos.Flow/Classes/Session
-        - Neos.Flow/Classes/SignalSlot
-        - Neos.Flow/Classes/Utility
-        - Neos.Flow/Classes/Validation
+        - Neos.Flow/Classes
         - Neos.Flow.Log/Classes
         - Neos.FluidAdaptor/Classes
         - Neos.Http.Factories/Classes
