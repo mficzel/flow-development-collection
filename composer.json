@@ -12,9 +12,15 @@
         ],
         "lint:phpstan-legacy": "../../bin/phpstan analyse -c phpstan-legacy.neon.dist -v",
         "lint:phpstan": "../../bin/phpstan analyse -c phpstan.neon.dist -v --memory-limit 256M",
+        "lint:phpcs": "../../bin/phpcs --colors --standard=PSR12 --exclude=Generic.Files.LineLength --extensions=php */Classes",
         "lint": [
+            "@lint:phpcs",
             "@lint:phpstan",
             "@lint:phpstan-legacy"
+        ],
+        "fix:phpcbf": "../../bin/phpcbf --colors --standard=PSR12 --exclude=Generic.Files.LineLength --extensions=php */Classes",
+        "fix": [
+            "@fix:phpcbf"
         ]
     },
     "require": {
@@ -141,7 +147,9 @@
     },
     "require-dev": {
         "mikey179/vfsstream": "^1.6.10",
-        "phpunit/phpunit": "~9.1"
+        "phpunit/phpunit": "~9.1",
+        "phpstan/phpstan": "^1.10.0",
+        "squizlabs/php_codesniffer": "^4.0"
     },
     "provide": {
         "psr/cache-implementation": "2.0.0 || 3.0.0",
