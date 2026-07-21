@@ -24,7 +24,7 @@ abstract class Arrays
      *
      * @param non-empty-string $delimiter Delimiter string to explode with
      * @param string $string The string to explode
-     * @return array<mixed> Exploded values, all converted to integers
+     * @return array<int,int> Exploded values, all converted to integers
      */
     public static function integerExplode(string $delimiter, string $string): array
     {
@@ -44,7 +44,7 @@ abstract class Arrays
      * @param non-empty-string $delimiter Delimiter string to explode with
      * @param string $string The string to explode
      * @param boolean $onlyNonEmptyValues If disabled, even empty values (='') will be set in output
-     * @return array<mixed> Exploded values
+     * @return array<int,string> Exploded values
      */
     public static function trimExplode(string $delimiter, string $string, bool $onlyNonEmptyValues = true): array
     {
