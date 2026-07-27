@@ -8,7 +8,7 @@
       "../../flow doctrine:migrate --quiet",
       "../../bin/behat -f progress -c Neos.Flow/Tests/Behavior/behat.yml"
     ],
-    "lint:php-cs-fixer": "../../bin/php-cs-fixer check",
+    "lint:php-cs-fixer": "../../bin/php-cs-fixer check -v",
     "lint:phpstan-legacy": "../../bin/phpstan analyse -c phpstan-legacy.neon.dist -v",
     "lint:phpstan": "../../bin/phpstan analyse -c phpstan.neon.dist -v --memory-limit 256M",
     "lint": [
