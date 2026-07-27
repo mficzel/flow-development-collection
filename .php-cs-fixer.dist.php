@@ -33,9 +33,10 @@ $finder = (new PhpCsFixer\Finder())
         './Neos.Utility.Unicode/Tests',
     ])
     ->notPath([
-        './Neos.Eel/Classes/FlowQuery/FizzleParser.php',
-        './Neos.Eel/Classes/EelParser.php',
-        './Neos.Eel/Classes/AbstractParser.php',
+        // exclusions are relative to the directories of in(). The files only exist in Neos.Eel.
+        'FlowQuery/FizzleParser.php',
+        'EelParser.php',
+        'AbstractParser.php',
     ])
 ;
 
