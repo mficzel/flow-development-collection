@@ -106,7 +106,7 @@ jobs:
           distribution-path: ${{ env.FLOW_DIST_FOLDER }}
 
       - name: Run unit tests
-        run: composer test-unit -- --verbose
+        run: composer test-unit
 
   functional-tests:
     permissions:
@@ -181,7 +181,7 @@ jobs:
         run: FLOW_CONTEXT=Testing ./flow doctrine:migrate
 
       - name: Run functional tests
-        run: composer test-func -- --verbose
+        run: composer test-func
 
   behavioral-tests:
     permissions:
