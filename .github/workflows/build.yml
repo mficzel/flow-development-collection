@@ -48,7 +48,7 @@ jobs:
     permissions:
       contents: read # to fetch code (actions/checkout)
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
-    name: "Unit tests (PHP ${{ matrix.php }}, deps: ${{ matrix.dependencies || 'highest' }})"
+    name: "Unit tests (PHP ${{ matrix.php-versions }}, deps: ${{ matrix.dependencies || 'highest' }})"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
