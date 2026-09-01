@@ -22,6 +22,7 @@ namespace Neos\Flow\Tests;
  * at some point, specific behavior needs to be implemented for unit tests, your test cases
  * will profit from it automatically.
  *
+ * @deprecated use \Neos\Flow\Testing\UnitTestCase instead. Will be removed with Neos.Flow 10.
  * @api
  */
 abstract class UnitTestCase extends BaseTestCase

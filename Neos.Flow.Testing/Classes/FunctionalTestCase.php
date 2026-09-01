@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Neos\Flow\Tests;
+namespace Neos\Flow\Testing;
 
 /*
  * This file is part of the Neos.Flow package.
@@ -13,6 +13,7 @@ namespace Neos\Flow\Tests;
  * information, please view the LICENSE file which was distributed with this
  * source code.
  */
+
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Bootstrap;
@@ -41,6 +42,7 @@ use Neos\Http\Factories\UriFactory;
 use Neos\Utility\Arrays;
 use Neos\Utility\Files;
 use Neos\Utility\ObjectAccess;
+use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface as HttpRequest;
 
 /**
@@ -51,7 +53,7 @@ use Psr\Http\Message\ServerRequestInterface as HttpRequest;
  *
  * @api
  */
-abstract class FunctionalTestCase extends BaseTestCase
+abstract class FunctionalTestCase extends TestCase
 {
     /**
      * A functional instance of the Object Manager, for use in concrete test cases.

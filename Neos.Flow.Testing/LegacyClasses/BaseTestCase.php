@@ -13,6 +13,7 @@ namespace Neos\Flow\Tests;
  * information, please view the LICENSE file which was distributed with this
  * source code.
  */
+
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +23,7 @@ use PHPUnit\Framework\TestCase;
  * Don't sub class this test case but rather choose a more specialized base test case,
  * such as UnitTestCase or FunctionalTestCase
  *
- * @deprecated its utilities are deprecated.
+ * @deprecated its utilities are deprecated. Will be removed with Neos.Flow 10.
  */
 abstract class BaseTestCase extends TestCase
 {

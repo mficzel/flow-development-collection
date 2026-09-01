@@ -11,6 +11,7 @@ namespace Neos\Flow\Tests;
  * information, please view the LICENSE file which was distributed with this
  * source code.
  */
+
 use GuzzleHttp\Psr7\ServerRequest;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Core\Bootstrap;
