@@ -37,7 +37,6 @@ use Neos\Flow\Security\Authorization\TestingPrivilegeManager;
 use Neos\Flow\Security\Context;
 use Neos\Flow\Security\Policy\PolicyService;
 use Neos\Flow\Session\SessionInterface;
-use Neos\Flow\Tests\FunctionalTestRequestHandler;
 use Neos\Http\Factories\ServerRequestFactory;
 use Neos\Http\Factories\UriFactory;
 use Neos\Utility\Arrays;

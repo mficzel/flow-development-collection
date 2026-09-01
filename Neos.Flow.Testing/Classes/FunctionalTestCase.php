@@ -19,10 +19,13 @@ use Neos\Flow\Configuration\ConfigurationManager;
 use Neos\Flow\Core\Bootstrap;
 use Neos\Flow\Http\Client\Browser;
 use Neos\Flow\Http\Client\InternalRequestEngine;
+use Neos\Flow\Http\HttpRequestHandlerInterface;
 use Neos\Flow\Mvc\ActionRequest;
 use Neos\Flow\Mvc\Routing\Dto\RouteContext;
 use Neos\Flow\Mvc\Routing\Dto\RouteParameters;
 use Neos\Flow\Mvc\Routing\Route;
+use Neos\Flow\Mvc\Routing\Router;
+use Neos\Flow\Mvc\Routing\RouterInterface;
 use Neos\Flow\Mvc\Routing\TestingRoutesProvider;
 use Neos\Flow\Persistence\Aspect\PersistenceMagicAspect;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
@@ -30,11 +33,15 @@ use Neos\Flow\ResourceManagement\ResourceManager;
 use Neos\Flow\ResourceManagement\ResourceRepository;
 use Neos\Flow\ResourceManagement\ResourceTypeConverter;
 use Neos\Flow\Security\Account;
+use Neos\Flow\Security\Authentication\AuthenticationManagerInterface;
 use Neos\Flow\Security\Authentication\AuthenticationProviderManager;
+use Neos\Flow\Security\Authentication\Provider\TestingProvider;
 use Neos\Flow\Security\Authentication\TokenAndProviderFactory;
 use Neos\Flow\Security\Authentication\TokenInterface;
+use Neos\Flow\Security\Authorization\PrivilegeManagerInterface;
 use Neos\Flow\Security\Authorization\TestingPrivilegeManager;
 use Neos\Flow\Security\Context;
+use Neos\Flow\Security\Context as SecurityContext;
 use Neos\Flow\Security\Policy\PolicyService;
 use Neos\Flow\Session\SessionInterface;
 use Neos\Http\Factories\ServerRequestFactory;
@@ -93,7 +100,7 @@ abstract class FunctionalTestCase extends TestCase
     /**
      * Contains a virtual, preinitialized browser
      *
-     * @var \Neos\Flow\Http\Client\Browser
+     * @var Browser
      * @api
      */
     protected $browser;
@@ -101,33 +108,33 @@ abstract class FunctionalTestCase extends TestCase
     /**
      * Contains the router instance used in the browser's request engine
      *
-     * @var \Neos\Flow\Mvc\Routing\Router
+     * @var RouterInterface
      * @api
      */
     protected $router;
 
     /**
-     * @var \Neos\Flow\Security\Context
+     * @var SecurityContext
      */
     protected $securityContext;
 
     /**
-     * @var \Neos\Flow\Security\Authentication\AuthenticationManagerInterface
+     * @var AuthenticationManagerInterface
      */
     protected $authenticationManager;
 
     /**
-     * @var \Neos\Flow\Persistence\PersistenceManagerInterface
+     * @var PersistenceManagerInterface
      */
     protected $persistenceManager;
 
     /**
-     * @var \Neos\Flow\Security\Authorization\PrivilegeManagerInterface
+     * @var PrivilegeManagerInterface&TestingPrivilegeManager
      */
     protected $privilegeManager;
 
     /**
-     * @var \Neos\Flow\Security\Policy\PolicyService
+     * @var PolicyService
      */
     protected $policyService;
 
@@ -137,7 +144,7 @@ abstract class FunctionalTestCase extends TestCase
     protected $tokenAndProviderFactory;
 
     /**
-     * @var \Neos\Flow\Security\Authentication\Provider\TestingProvider
+     * @var TestingProvider
      */
     protected $testingProvider;
 
@@ -217,7 +224,9 @@ abstract class FunctionalTestCase extends TestCase
             $this->authenticationManager = $this->objectManager->get(AuthenticationProviderManager::class);
 
             $this->tokenAndProviderFactory = $this->objectManager->get(TokenAndProviderFactory::class);
-            $this->testingProvider = $this->tokenAndProviderFactory->getProviders()['TestingProvider'];
+            /** @var TestingProvider $testingProvider */
+            $testingProvider = $this->tokenAndProviderFactory->getProviders()['TestingProvider'];
+            $this->testingProvider = $testingProvider;
 
             $this->registerRoute('functionaltestroute', 'neos/flow/test', [
                 '@package' => 'Neos.Flow',
@@ -227,6 +236,7 @@ abstract class FunctionalTestCase extends TestCase
                 '@format' => 'html'
             ]);
 
+            /** @var HttpRequestHandlerInterface $requestHandler */
             $requestHandler = self::$bootstrap->getActiveRequestHandler();
             $actionRequest = $this->route($requestHandler->getHttpRequest());
 
@@ -285,9 +295,11 @@ abstract class FunctionalTestCase extends TestCase
         self::$bootstrap->getObjectManager()->forgetInstance(InternalRequestEngine::class);
         self::$bootstrap->getObjectManager()->get(TestingRoutesProvider::class)->reset();
         self::$bootstrap->getObjectManager()->forgetInstance(PersistenceMagicAspect::class);
-        $this->inject(self::$bootstrap->getObjectManager()->get(ResourceRepository::class), 'addedResources', new \SplObjectStorage());
-        $this->inject(self::$bootstrap->getObjectManager()->get(ResourceRepository::class), 'removedResources', new \SplObjectStorage());
-        $this->inject(self::$bootstrap->getObjectManager()->get(ResourceTypeConverter::class), 'convertedResources', []);
+        $resourceRepository = self::$bootstrap->getObjectManager()->get(ResourceRepository::class);
+        ObjectAccess::setProperty($resourceRepository, 'addedResources', new \SplObjectStorage());
+        ObjectAccess::setProperty($resourceRepository, 'removedResources', new \SplObjectStorage());
+        $resourceTypeConverter = self::$bootstrap->getObjectManager()->get(ResourceTypeConverter::class);
+        ObjectAccess::setProperty($resourceTypeConverter, 'convertedResources', []);
 
         $this->cleanupPersistentResourcesDirectory();
         $this->emitFunctionalTestTearDown();
@@ -321,7 +333,7 @@ abstract class FunctionalTestCase extends TestCase
      * Creates a new account, assigns it the given roles and authenticates it.
      * The created account is returned for further modification, for example for attaching a Party object to it.
      *
-     * @param array $roleNames A list of roles the new account should have
+     * @param string[] $roleNames A list of roles the new account should have
      * @return \Neos\Flow\Security\Account The created account
      * @api
      */
@@ -353,6 +365,9 @@ abstract class FunctionalTestCase extends TestCase
         $this->securityContext->clearContext();
 
         $requestHandler = self::$bootstrap->getActiveRequestHandler();
+        if (!$requestHandler instanceof HttpRequestHandlerInterface) {
+            throw new \Exception("the requestHandler is expected to be an instance of HttpRequestHandlerInterface", 1788266492);
+        }
         $actionRequest = $this->route($requestHandler->getHttpRequest());
         $this->securityContext->setRequest($actionRequest);
         $this->authenticationManager->authenticate();
@@ -374,9 +389,9 @@ abstract class FunctionalTestCase extends TestCase
      *
      * @param string $name Name of the route
      * @param string $uriPattern The uriPattern property of the route
-     * @param array $defaults An array of defaults declarations
+     * @param array<mixed> $defaults An array of defaults declarations
      * @param boolean $appendExceedingArguments If exceeding arguments may be appended
-     * @param array $httpMethods An array of accepted http methods
+     * @param array<string> $httpMethods An array of accepted http methods
      * @return Route
      * @api
      */
@@ -453,7 +468,9 @@ abstract class FunctionalTestCase extends TestCase
     {
         $this->browser = new Browser();
         $this->browser->setRequestEngine(new InternalRequestEngine());
-        $this->router = $this->browser->getRequestEngine()->getRouter();
+        /** @var InternalRequestEngine $requestEngine */
+        $requestEngine = $this->browser->getRequestEngine();
+        $this->router = $requestEngine->getRouter();
 
         $serverRequestFactory = new ServerRequestFactory(new UriFactory());
         $request = $serverRequestFactory->createServerRequest('GET', 'http://localhost/neos/flow/test');

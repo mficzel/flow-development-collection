@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Neos\Flow\Tests;
+namespace Neos\Flow\Testing;
 
 /*
  * This file is part of the Neos.Flow package.
